@@ -5,56 +5,21 @@ val Pair<Int, Int>.col get() = second
 operator fun List<List<Int>>.get(p: Pair<Int, Int>) = this[p.first][p.second]
 
 class Node(val pos: Pair<Int, Int>, val height: Int, val parent: Node? = null) {
-    fun getChildren(heightMap: List<List<Int>>): Sequence<Node> {
-        val parent = this
-        return sequence{
-            fun canMove(nextHeight: Int): Boolean {
-                return nextHeight <= height + 1
-            }
+    fun getChildren(heightMap: List<List<Int>>): List<Node> {
+        val positions = listOfNotNull(
+            if (pos.row > 0) Pair(pos.row - 1, pos.col) else null,
+            if (pos.row < heightMap.size - 1) Pair(pos.row + 1, pos.col) else null,
+            if (pos.col > 0) Pair(pos.row, pos.col - 1) else null,
+            if (pos.col < heightMap[0].size - 1) Pair(pos.row, pos.col + 1) else null
+        )
 
-            // Up
-            if (pos.row > 0) {
-                val up = Pair(pos.row - 1, pos.col)
-                val upHeight = heightMap[up]
-                if (canMove(upHeight)) {
-                    yield(
-                        Node(up, upHeight, parent)
-                    )
-                }
-            }
+        fun canMove(nextHeight: Int): Boolean {
+            return nextHeight <= height + 1
+        }
 
-            // Down
-            if (pos.row < heightMap.size - 1) {
-                val down = Pair(pos.row + 1, pos.col)
-                val downHeight = heightMap[down]
-                if (canMove(downHeight)) {
-                    yield(
-                        Node(down, downHeight, parent)
-                    )
-                }
-            }
-
-            // Left
-            if (pos.col > 0) {
-                val left = Pair(pos.row, pos.col - 1)
-                val leftHeight = heightMap[left]
-                if (canMove(leftHeight)) {
-                    yield(
-                        Node(left, leftHeight, parent)
-                    )
-                }
-            }
-
-            // Right
-            if (pos.col < heightMap[0].size - 1) {
-                val right = Pair(pos.row, pos.col + 1)
-                val rightHeight = heightMap[right]
-                if (canMove(rightHeight)) {
-                    yield(
-                        Node(right, rightHeight, parent)
-                    )
-                }
-            }
+        return positions.mapNotNull {
+            val height = heightMap[it]
+            if (canMove(height)) Node(it, height, this) else null
         }
     }
 }
